@@ -1,9 +1,16 @@
-// Testing loading page with delay
-// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import sampleData from '@/sample-data';
+import ProductList from '@/components/shared/product/product-list';
 
 const HomePage = async () => {
-  // await delay(2000)
-  return <>shop</>;
+  return (
+    <>
+      <ProductList
+        data={sampleData.products}
+        title="Newest Arrivals"
+        limit={4}
+      />
+    </>
+  );
 };
 
 export default HomePage;
