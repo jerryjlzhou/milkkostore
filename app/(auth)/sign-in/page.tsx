@@ -10,7 +10,6 @@ import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
 import { CardTitle } from '@/components/ui/card';
 import CredentialsSignInForm from './credentials-signin-form';
-import { signInWithCredentials } from '@/lib/actions/user.actions';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 
