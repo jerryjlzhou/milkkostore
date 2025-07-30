@@ -1,10 +1,18 @@
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/ui/card';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
 import { CardTitle } from '@/components/ui/card';
 import CredentialsSignInForm from './credentials-signin-form';
+import { signInWithCredentials } from '@/lib/actions/user.actions';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 
 
@@ -12,7 +20,15 @@ export const metadata: Metadata = {
   title: 'Sign In',
 };
 
-const SignInPage = () => {
+const SignInPage = async () => {
+
+  const session = await auth();
+
+  // If user logs in and starts session, redirect to home page
+  if (session) {
+    return redirect('/');
+  }
+
   return (
     <div className="w-full max-w-md mx-auto">
       <Card>
@@ -26,11 +42,11 @@ const SignInPage = () => {
             ></Image>
           </Link>
           <CardTitle className="text-center">Sign In</CardTitle>
-          <CardDescription className='text-center'>
+          <CardDescription className="text-center">
             Sign in to your account
           </CardDescription>
         </CardHeader>
-        <CardContent className='space-y-4'>
+        <CardContent className="space-y-4">
           <CredentialsSignInForm />
         </CardContent>
       </Card>
