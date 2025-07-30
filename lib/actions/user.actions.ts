@@ -5,6 +5,7 @@ import { signIn, signOut } from '@/auth';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { hashSync } from 'bcrypt-ts-edge';
 import { prisma } from '@/db/prisma';
+import { ZodError } from 'zod';
 
 // Sign in the user with credentials
 export async function signInWithCredentials(
@@ -44,15 +45,29 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       confirmPassword: formData.get('confirmPassword'),
     });
 
-    const plainPassword = user.password;
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: user.email },
+    });
 
-    user.password = hashSync(user.password, 10);
+    if (existingUser) {
+      return {
+        success: false,
+        message: 'An account with this email already exists',
+        fieldErrors: {
+          email: ['An account with this email already exists'],
+        },
+      };
+    }
+
+    const plainPassword = user.password;
+    const hashedPassword = hashSync(user.password, 10);
 
     await prisma.user.create({
       data: {
         name: user.name,
         email: user.email,
-        password: user.password,
+        password: hashedPassword,
       },
     });
 
@@ -61,12 +76,50 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       password: plainPassword,
     });
 
-    return { success: true, message: 'User registered successfully' }
+    return {
+      success: true,
+      message: 'Account created successfully! Welcome to MilkkoStore.',
+    };
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     }
 
-    return { success: false, message: 'User was not registered' };
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      const fieldErrors: Record<string, string[]> = {};
+      error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = [];
+        }
+        fieldErrors[field].push(issue.message);
+      });
+
+      return {
+        success: false,
+        message: 'Please check the errors below',
+        fieldErrors,
+      };
+    }
+
+    // Handle database errors
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          message: 'An account with this email already exists',
+          fieldErrors: {
+            email: ['An account with this email already exists'],
+          },
+        };
+      }
+    }
+
+    console.error('Sign up error:', error);
+    return {
+      success: false,
+      message: 'Something went wrong. Please try again later.',
+    };
   }
 }

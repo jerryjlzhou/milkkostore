@@ -32,23 +32,29 @@ const SignUpPage = async (props: {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <Card>
-        <CardHeader className="space-y-4">
+    <div className="w-full max-w-lg mx-auto">
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="space-y-6 pb-8">
           <Link href="/" className="flex-center">
             <Image
               src="/images/logo.svg"
               width={100}
               height={100}
               alt={`${APP_NAME}`}
-            ></Image>
+              className="hover:opacity-80 transition-opacity"
+            />
           </Link>
-          <CardTitle className="text-center">Create an account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your information to sign up
-          </CardDescription>
+          <div className="text-center space-y-2">
+            <CardTitle className="text-2xl font-bold">
+              Join MilkkoStore
+            </CardTitle>
+            <CardDescription className="text-base text-gray-600">
+              Create your account to start shopping for amazing anime
+              merchandise
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-8 pb-8">
           <SignUpForm />
         </CardContent>
       </Card>

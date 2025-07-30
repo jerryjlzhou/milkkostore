@@ -13,16 +13,14 @@ import CredentialsSignInForm from './credentials-signin-form';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 
-
-
 export const metadata: Metadata = {
   title: 'Sign In',
 };
 
 const SignInPage = async (props: {
   searchParams: Promise<{
-    callbackUrl: string
-  }>
+    callbackUrl: string;
+  }>;
 }) => {
   const { callbackUrl } = await props.searchParams;
 
@@ -34,23 +32,26 @@ const SignInPage = async (props: {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <Card>
-        <CardHeader className="space-y-4">
+    <div className="w-full max-w-lg mx-auto">
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="space-y-6 pb-8">
           <Link href="/" className="flex-center">
             <Image
               src="/images/logo.svg"
               width={100}
               height={100}
               alt={`${APP_NAME}`}
-            ></Image>
+              className="hover:opacity-80 transition-opacity"
+            />
           </Link>
-          <CardTitle className="text-center">Sign In</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to your account
-          </CardDescription>
+          <div className="text-center space-y-2">
+            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardDescription className="text-base text-gray-600">
+              Sign in to your account to continue shopping
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-8 pb-8">
           <CredentialsSignInForm />
         </CardContent>
       </Card>

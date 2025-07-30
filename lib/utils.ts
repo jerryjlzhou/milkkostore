@@ -16,3 +16,4 @@ export function formatNumberWithDecimal(num: number): string {
 
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }
+
