@@ -17,3 +17,20 @@ export function formatNumberWithDecimal(num: number): string {
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }
 
+// Format error messages for consistent error handling
+export function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  
+  return 'An unexpected error occurred';
+}
+
