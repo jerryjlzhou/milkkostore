@@ -1,40 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/auth"
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const response = NextResponse.next();
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
 
-  // Check for session token (NextAuth session)
-  const sessionToken =
-    request.cookies.get('next-auth.session-token') ||
-    request.cookies.get('__Secure-next-auth.session-token');
+  // Define protected paths that require authentication
+  const protectedPaths = [
+    /^\/shipping-address/,
+    /^\/payment-method/,
+    /^\/place-order/,
+    /^\/profile/,
+    /^\/user\/.*/,
+    /^\/order\/.*/,
+    /^\/admin/,
+  ];
 
-  // Handle auth page redirects
-  const isAuthPage =
-    pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  // Check if the current path is protected
+  const isProtectedPath = protectedPaths.some((pattern) => pattern.test(pathname));
 
-  if (sessionToken && isAuthPage) {
-    // User is logged in, redirect away from auth pages
-    const callbackUrl = request.nextUrl.searchParams.get('callbackUrl') || '/';
-    return NextResponse.redirect(new URL(callbackUrl, request.url));
+  // Handle auth page redirects - if user is logged in, redirect away from auth pages
+  const isAuthPage = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  
+  if (req.auth && isAuthPage) {
+    const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/';
+    return Response.redirect(new URL(callbackUrl, req.nextUrl.origin));
   }
 
-  // Generate session cart ID if it doesn't exist (using crypto.randomUUID)
-  let sessionCartId = request.cookies.get('sessionCartId')?.value;
-  if (!sessionCartId) {
-    // Generate a simple unique ID without external dependencies
-    sessionCartId = crypto.randomUUID();
-    response.cookies.set('sessionCartId', sessionCartId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      path: '/',
-    });
+  // Protect paths that require authentication
+  if (isProtectedPath && !req.auth) {
+    const signInUrl = new URL('/sign-in', req.nextUrl.origin);
+    signInUrl.searchParams.set('callbackUrl', pathname);
+    return Response.redirect(signInUrl);
   }
-
-  return response;
-}
+})
 
 export const config = {
   matcher: [

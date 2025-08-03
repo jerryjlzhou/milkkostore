@@ -24,7 +24,12 @@ export async function signInWithCredentials(
       password: formData.get('password'),
     });
 
-    await signIn('credentials', user);
+    const callbackUrl = formData.get('callbackUrl') as string;
+
+    await signIn('credentials', {
+      ...user,
+      callbackUrl: callbackUrl || '/',
+    });
 
     return { success: true, message: 'Signed in successfully' };
   } catch (error) {
@@ -86,9 +91,12 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       },
     });
 
+    const callbackUrl = formData.get('callbackUrl') as string;
+
     await signIn('credentials', {
       email: user.email,
       password: plainPassword,
+      callbackUrl: callbackUrl || '/',
     });
 
     return {

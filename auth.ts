@@ -74,30 +74,28 @@ export const config = {
           });
         }
 
-        if (trigger === 'signIn' || trigger ==='signUp') {
+        if (trigger === 'signIn' || trigger === 'signUp') {
           const cookiesObject = await cookies();
           const sessionCartId = cookiesObject.get('sessionCartId')?.value;
 
           if (sessionCartId) {
             const sessionCart = await prisma.cart.findFirst({
-              where: {sessionCartId},
+              where: { sessionCartId },
             });
-            
+
             // Delete current user cart
             if (sessionCart) {
               await prisma.cart.deleteMany({
                 where: { userId: user.id },
               });
-              
+
               // Assign new cart
               await prisma.cart.update({
-                where: {id: sessionCart.id},
-                data: {userId: user.id}
+                where: { id: sessionCart.id },
+                data: { userId: user.id },
               });
-
             }
           }
-
         }
       }
 
@@ -110,29 +108,22 @@ export const config = {
     },
 
     authorized({ request, auth }: any) {
-      // Check for session cart cookie
+      // Generate session cart ID if it doesn't exist
       if (!request.cookies.get('sessionCartId')) {
-        // Generate new session cart id cookie
         const sessionCartId = crypto.randomUUID();
-
-
-        // Clone the request headers
-        const newRequestHeaders = new Headers(request.headers);
-
-        // Create new response and add the new headers
-        const response = NextResponse.next({
-          request: {
-            headers: newRequestHeaders
-          }
+        const response = NextResponse.next();
+        response.cookies.set('sessionCartId', sessionCartId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 365, // 1 year
+          path: '/',
         });
-
-        // Set newly generated sessionCartId in the response cookies
-        response.cookies.set('sessionCartId', sessionCartId);
-
         return response;
-      } else {
-        return true;
       }
+
+      // Allow all requests to continue (auth is handled in middleware)
+      return true;
     },
     async session({ session, token, trigger }: any) {
       // Map the token data to the session object
@@ -140,8 +131,6 @@ export const config = {
       session.user.name = token.name;
       session.user.role = token.role;
       session.user.email = token.email;
-
-      console.log(token);
 
       // Optionally handle session updates (like name change)
       if (trigger === 'update' && token.name) {
