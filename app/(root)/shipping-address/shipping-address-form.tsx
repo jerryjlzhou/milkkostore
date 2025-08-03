@@ -4,7 +4,7 @@ import { ShippingAddress } from '@/types';
 import { shippingAddressSchema } from '@/lib/validators';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { shippingAddressDefaultValues } from '@/lib/constants';
 import {
   Form,
@@ -20,6 +20,8 @@ import { useRouter } from 'next/navigation';
 import { useTransition, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { updateUserAddress } from '@/lib/actions/user.actions';
+
 
 const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
   const router = useRouter();
@@ -31,17 +33,21 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
     defaultValues: address || shippingAddressDefaultValues,
   });
 
-  const onSubmit = async (data: z.infer<typeof shippingAddressSchema>) => {
+  const onSubmit:SubmitHandler<z.infer<typeof shippingAddressSchema>> = async(values) => {
     setIsSubmitting(true);
     startTransition(async () => {
       try {
-        // TODO: Implement save shipping address action
-        console.log('Shipping address data:', data);
+        const res = await updateUserAddress(values);
+
+        if (!res.success) {
+          toast.error(res.message);
+          return;
+        }
 
         toast.success('Shipping address saved successfully!');
 
         // Navigate to next step (payment or order review)
-        router.push('/payment');
+        router.push('/payment-method');
       } catch (error) {
         console.error('Error saving shipping address:', error);
         toast.error('Failed to save shipping address. Please try again.');
