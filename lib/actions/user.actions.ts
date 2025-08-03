@@ -38,6 +38,15 @@ export async function signInWithCredentials(
 
 // Sign out
 export async function signOutUser() {
+  const session = await auth();
+
+  // Delete the current user's cart when they sign out
+  if (session?.user?.id) {
+    await prisma.cart.deleteMany({
+      where: { userId: session.user.id },
+    });
+  }
+
   await signOut();
 }
 
@@ -159,8 +168,8 @@ export async function updateUserAddress(data: ShippingAddress) {
 
     return {
       success: true,
-      message: "User address updated successfully!"
-    }
+      message: 'User address updated successfully!',
+    };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
