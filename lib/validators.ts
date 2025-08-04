@@ -93,12 +93,14 @@ export const shippingAddressSchema = z.object({
 });
 
 // Schema for payment method
-export const paymentMethodSchema = z.object({
-  type: z.string().min(1, 'Payment method is required'),
-}).refine((data) => PAYMENT_METHODS.includes(data.type), {
-  path: ['type'],
-  message: 'Invalid payment method',
-})
+export const paymentMethodSchema = z
+  .object({
+    type: z.string().min(1, 'Payment method is required'),
+  })
+  .refine((data) => PAYMENT_METHODS.includes(data.type), {
+    path: ['type'],
+    message: 'Invalid payment method',
+  });
 
 // TypeScript types derived from schemas
 export type InsertProduct = z.infer<typeof insertProductSchema>;

@@ -13,6 +13,7 @@ import { prisma } from '@/db/prisma';
 import { ZodError } from 'zod';
 import { ShippingAddress } from '@/types';
 import { formatError } from '../utils';
+import z from 'zod';
 
 // Sign in the user with credentials
 export async function signInWithCredentials(
