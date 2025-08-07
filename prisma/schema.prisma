@@ -108,7 +108,7 @@ model Cart {
 
 model Order {
   id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId          String     @db.Uuid
+  userId          String      @db.Uuid
   shippingAddress Json        @db.Json
   paymentMethod   String
   paymentResult   Json?       @db.Json
@@ -120,8 +120,9 @@ model Order {
   paidAt          DateTime?   @db.Timestamp(6)
   isDelivered     Boolean     @default(false)
   deliveredAt     DateTime?   @db.Timestamp(6)
+  createdAt       DateTime    @default(now()) @db.Timestamp(6)
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderitems       OrderItem[]
+  orderitems      OrderItem[]
 }
 
 model OrderItem {
