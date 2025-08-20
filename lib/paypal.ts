@@ -16,7 +16,7 @@ export const paypal = {
         purchase_units: [
           {
             amount: {
-              currency_code: 'AUD',
+              currency_code: 'USD',
               value: price,
             },
           },
@@ -32,7 +32,7 @@ export const paypal = {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'applications/json',
+        'Content-Type': 'application/json', // Fixed typo: was 'applications/json'
         Authorization: `Bearer ${accessToken}`,
       },
     });

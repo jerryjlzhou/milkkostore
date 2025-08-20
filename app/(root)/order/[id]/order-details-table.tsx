@@ -15,8 +15,24 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
+import {
+  PayPalButtons,
+  PayPalScriptProvider,
+  usePayPalScriptReducer,
+} from '@paypal/react-paypal-js';
+import {
+  createPayPalOrder,
+  approvePayPalOrder,
+} from '@/lib/actions/order.actions';
+import { toast } from 'sonner';
 
-const OrderDetailsTable = ({ order }: { order: Order }) => {
+const OrderDetailsTable = ({
+  order,
+  paypalClientId,
+}: {
+  order: Order;
+  paypalClientId: string;
+}) => {
   const {
     id,
     shippingAddress,
@@ -32,6 +48,54 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
     deliveredAt,
   } = order;
 
+  const PrintLoadingState = () => {
+    const [{ isPending, isRejected }] = usePayPalScriptReducer();
+    let status = '';
+
+    if (isPending) {
+      status = 'Loading PayPal...';
+    } else if (isRejected) {
+      status = 'Error Loading PayPal';
+    }
+
+    return status;
+  };
+
+  const handleCreatePayPalOrder = async () => {
+    try {
+      const res = await createPayPalOrder(order.id);
+
+      if (!res.success) {
+        toast.error(res.message);
+        throw new Error(res.message); // Throw error to prevent PayPal from continuing
+      }
+
+      return res.data; // This should be the PayPal order ID
+    } catch (error) {
+      console.error('Error creating PayPal order:', error);
+      toast.error('Failed to create PayPal order');
+      throw error; // Re-throw to stop PayPal flow
+    }
+  };
+
+  const handleApprovePayPalOrder = async (data: { orderID: string }) => {
+    try {
+      const res = await approvePayPalOrder(order.id, data);
+
+      if (!res.success) {
+        toast.error(res.message);
+        throw new Error(res.message);
+      } else {
+        toast.success(res.message);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error approving PayPal order:', error);
+      toast.error('Failed to approve PayPal payment');
+      throw error;
+    }
+  };
+
   return (
     <>
       <h1 className="py-4 text-2xl">Order {formatId(id)}</h1>
@@ -40,7 +104,7 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
           <Card>
             <CardContent className="p-4 gap-4">
               <h2 className="text-xl pb-4">Payment Method</h2>
-              <p className='mb-2'>{paymentMethod}</p>
+              <p className="mb-2">{paymentMethod}</p>
               {isPaid ? (
                 <Badge variant="secondary">
                   Paid at {formatDateTime(paidAt!).dateTime}
@@ -54,7 +118,7 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
             <CardContent className="p-4 gap-4">
               <h2 className="text-xl pb-4">Shipping Address</h2>
               <p>{shippingAddress.fullName}</p>
-              <p className='mb-2'>
+              <p className="mb-2">
                 {shippingAddress.streetAddress}, {shippingAddress.city}
                 {shippingAddress.postalCode}, {shippingAddress.country}
               </p>
@@ -127,6 +191,37 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
                 <div>Total</div>
                 <div> {formatCurrency(totalPrice)}</div>
               </div>
+              {/* PayPal Payment */}
+              {!isPaid && paymentMethod === 'PayPal' && (
+                <div>
+                  <PayPalScriptProvider 
+                    options={{ 
+                      clientId: paypalClientId,
+                      currency: 'USD', // Changed from AUD to USD
+                      intent: 'capture'
+                    }}
+                  >
+                    <PrintLoadingState />
+                    <PayPalButtons
+                      createOrder={handleCreatePayPalOrder}
+                      onApprove={handleApprovePayPalOrder}
+                      onError={(err) => {
+                        console.error('PayPal Button Error:', err);
+                        toast.error('PayPal payment failed. Please try again.');
+                      }}
+                      onCancel={() => {
+                        toast.info('PayPal payment was cancelled.');
+                      }}
+                      style={{
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'paypal',
+                      }}
+                    />
+                  </PayPalScriptProvider>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
