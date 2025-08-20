@@ -10,9 +10,9 @@ async function generateAccessToken() {
     'base64'
   );
 
-  const response = await fetch(`{base}/v1/oauth2/token`, {
+  const response = await fetch(`${base}/v1/oauth2/token`, {
     method: 'POST',
-    body: 'grant_type=client_credientials',
+    body: 'grant_type=client_credentials',
     headers: {
       Authorization: `Basic ${auth}`,
       'Content-Type': 'application/x-www-form-urlencoded',
