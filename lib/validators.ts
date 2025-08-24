@@ -28,7 +28,7 @@ export const insertProductSchema = z.object({
 
 // Schema for signing users in
 export const signInFormSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.email('Please enter a valid E-mail'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -41,11 +41,7 @@ export const signUpFormSchema = z
       .min(2, 'Name must be at least 2 characters')
       .max(50, 'Name must be less than 50 characters')
       .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
-    email: z
-      .string()
-      .min(1, 'Email is required')
-      .email({ message: 'Please enter a valid email address' })
-      .max(100, 'Email must be less than 100 characters'),
+    email: z.email('Please enter a valid E-mail'),
     password: z
       .string()
       .min(1, 'Password is required')
@@ -133,4 +129,10 @@ export const paymentResultSchema = z.object({
   status: z.string(),
   email_address: z.string(),
   pricePaid: z.string(),
+});
+
+// Schema for updating user profile
+export const updateProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.email('Please enter a valid E-mail'),
 });
