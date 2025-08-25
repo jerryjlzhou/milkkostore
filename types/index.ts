@@ -14,7 +14,7 @@ export type Product = {
   id: string;
   name: string;
   slug: string;
-  category: string;
+  category: string | null;
   images: string[];
   brand: string | null;
   description: string;
