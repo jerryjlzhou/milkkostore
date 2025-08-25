@@ -56,6 +56,7 @@ export const config = {
     }),
   ],
   callbacks: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user, trigger, session }: any) {
       // Assign user fields to token
       if (user) {
@@ -106,9 +107,8 @@ export const config = {
         token.name = session.user.name;
       }
 
-      return token;
-    },
-
+      return token;    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     authorized({ request, auth }: any) {
       // Protect paths
       const protectedPaths = [
@@ -151,6 +151,7 @@ export const config = {
         return true;
       }
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, token, trigger }: any) {
       // Map the token data to the session object
       session.user.id = token.id;
