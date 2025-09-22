@@ -10,25 +10,12 @@ import {
 } from '@/lib/validators';
 
 // Database Product type (what Prisma returns)
-export type Product = {
+export type Product = z.infer<typeof insertProductSchema> & {
   id: string;
-  name: string;
-  slug: string;
-  category: string | null;
-  images: string[];
-  brand: string | null;
-  description: string;
-  stock: number;
-  price: string; // Decimal converted to string
-  rating: string; // Decimal converted to string
+  rating: string;
   numReviews: number;
-  isFeatured: boolean;
-  banner: string | null;
   createdAt: Date;
 };
-
-// Insert Product type (for creating new products)
-export type InsertProduct = z.infer<typeof insertProductSchema>;
 
 export type Cart = z.infer<typeof insertCartSchema>;
 export type CartItem = z.infer<typeof cartItemSchema>;
